@@ -5,6 +5,7 @@ import sqlite3
 from contextlib import closing
 
 from aiogram import Bot, Dispatcher, Router, F
+from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.enums import ParseMode
@@ -19,7 +20,7 @@ DB_PATH = "tickets.db"
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 router = Router()
 dp.include_router(router)
