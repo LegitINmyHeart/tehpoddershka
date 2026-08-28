@@ -46,7 +46,7 @@ class ChatIdLoggerMiddleware(BaseMiddleware):
         return await handler(event, data)
 
 
-dp.update.middleware(ChatIdLoggerMiddleware())
+dp.message.outer_middleware(ChatIdLoggerMiddleware())
 
 
 # ---------- БАЗА ДАННЫХ ----------
