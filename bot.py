@@ -3,11 +3,12 @@ import logging
 import os
 import sqlite3
 from contextlib import closing
+from typing import Any, Awaitable, Callable, Dict
 
-from aiogram import Bot, Dispatcher, Router, F
+from aiogram import Bot, Dispatcher, Router, F, BaseMiddleware
 from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, TelegramObject
 from aiogram.enums import ParseMode
 
 # ============ НАСТРОЙКИ ============
@@ -24,6 +25,28 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTM
 dp = Dispatcher()
 router = Router()
 dp.include_router(router)
+
+
+# ---------- DEBUG MIDDLEWARE: логирует chat_id любого сообщения ----------
+# Это нужно, чтобы узнать правильный ADMIN_GROUP_ID для группы админов.
+# После того как ID найден и прописан в переменных окружения, этот блок
+# можно оставить как есть — он ничего не ломает и просто пишет в логи.
+class ChatIdLoggerMiddleware(BaseMiddleware):
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: Dict[str, Any],
+    ) -> Any:
+        if isinstance(event, Message):
+            chat = event.chat
+            logging.info(
+                f"[CHAT DEBUG] chat_id={chat.id} type={chat.type} title={chat.title!r}"
+            )
+        return await handler(event, data)
+
+
+dp.update.middleware(ChatIdLoggerMiddleware())
 
 
 # ---------- БАЗА ДАННЫХ ----------
